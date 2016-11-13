@@ -50,7 +50,7 @@ object IpDemo {
 
 
   def main(args: Array[String]) {
-    val ip = "120.55.185.61"
+    val ip = "123.197.64.48"
     val ipNum = ip2Long(ip)
     println(ipNum)
     val lines = readData("c://ip.txt")
