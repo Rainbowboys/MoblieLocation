@@ -2,7 +2,7 @@ package com.bigdata.nciae.iplocation
 
 import org.apache.spark.{SparkContext, SparkConf}
 
-import scala.collection.mutable.ArrayBuffer
+
 
 /**
  * Created by Rainbow on 2016/11/13.
