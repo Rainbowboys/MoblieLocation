@@ -26,7 +26,7 @@ object CustomSortBy {
 
   def main(args: Array[String]) {
 
-
+    import com.bigdata.nciae.sortBy.myPreDef._
     val conf = new SparkConf().setAppName("CustomSort").setMaster("local[2]")
     val sc = new SparkContext(conf)
 
