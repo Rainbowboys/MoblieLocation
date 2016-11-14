@@ -1,14 +1,41 @@
 package com.bigdata.nciae.iplocation
 
+import java.sql.{Date, PreparedStatement, Connection, DriverManager}
+
 import org.apache.spark.{SparkContext, SparkConf}
-
-
-
 /**
  * Created by Rainbow on 2016/11/13.
  * 查找 ip归属地
  */
 object IpLocaltion {
+
+  //data->MySql
+
+  def dataToMySql(iterator: Iterator[(String, Int)]) = {
+    var conn: Connection = null;
+    var prestament: PreparedStatement = null;
+    val sql="insert into location_info(location,count,create_time) values(?,?,?)"
+
+    try{
+      conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/bigdata?useUnicode=true&characterEncoding=UTF-8","root","root")
+
+      iterator.foreach(line=>{
+        prestament=conn.prepareStatement(sql)
+        prestament.setString(1,line._1)
+        prestament.setInt(2,line._2)
+        prestament.setDate(3,new Date(System.currentTimeMillis()))
+        prestament.executeUpdate()
+      })
+    }catch {
+      case  e:Exception=>println(e.getLocalizedMessage)
+    }finally {
+
+      if(prestament!=null) prestament.close()
+      if(conn!=null)  conn.close()
+
+    }
+  }
+
 
   //ip String to Long
 
@@ -54,7 +81,7 @@ object IpLocaltion {
     })
 
     val ipRulesArray = ipRulesRDD.collect()
-   // println(ipRulesArray.toBuffer)
+    // println(ipRulesArray.toBuffer)
     //广播规则
     val broadcastRules = sc.broadcast(ipRulesArray)
 
@@ -72,18 +99,15 @@ object IpLocaltion {
       val ipLong = ip2Long(ip)
       val index = binarySearch(broadcastRules.value, ipLong)
       val info = broadcastRules.value(index)
-      (info._3,ip)
+      (info._3, 1)
     })
-     val result= infoRDD.groupBy(_._1)
+    val result = infoRDD.reduceByKey(_ + _).sortBy(_._2, false)
+     //数据保存在mysql
+    result.foreachPartition(dataToMySql)
+    //println(result.collect().toBuffer)
 
-     println(result.collect().toBuffer)
-
-  //  infoRDD.saveAsTextFile("c:\\out3")
-
-
+    //  infoRDD.saveAsTextFile("c:\\out3")
     sc.stop()
-
-
   }
 
 }
