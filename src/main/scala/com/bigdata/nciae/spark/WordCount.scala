@@ -10,7 +10,9 @@ object WordCount {
 
   def main(args: Array[String]) {
 
-    val config = new SparkConf().setAppName("WordCount").setMaster("local")
+    val config = new SparkConf().setAppName("WordCount")
+      .setJars(Array("E:\\BaiduYunDownload\\Spark-WordCount\\target\\Spark-WordCount-1.0-SNAPSHOT.jar")).setMaster("spark://master:7077")
+
 
     val sc = new SparkContext(config)
 
@@ -18,7 +20,8 @@ object WordCount {
     //we only need V so to map -> [1]HadoopRDD.map(pair => pair._2.toString)
     //get two RDD
    // val textFile = sc.textFile(args(0))
-    val textFile = sc.textFile("D://test.txt")
+    val textFile=sc.parallelize(List(" the local radio station. He often told"))
+   // val textFile = sc.textFile("c://wc")
     //[2]MapPartitionsRDD =new MapPartitionsRDD
     val rdd = textFile.flatMap(_.split(" "))
     // [3]MapPartitionsRDD=new MapPartitionsRDD[U, T](this, (context, pid, iter) => iter.map(cleanF))
@@ -27,9 +30,9 @@ object WordCount {
     val rdd2 = rdd1.reduceByKey((_ + _))
     //  this.keyBy[K](f) .sortByKey(ascending, numPartitions)  执行这条语句 产生三个RDD  MapPartitionsRDD[5] -> ShuffledRDD[6]->new MapPartitionsRDD[7]
     val rdd3 = rdd2.sortBy(_._2, true)
-    println(rdd3.toDebugString)
+     println(rdd3.collect().toBuffer)
    //this.mapPartitions->MapPartitionsRDD
-    rdd3.saveAsTextFile(args(1))
+    //rdd3.saveAsTextFile("D:/out")
     sc.stop()
 
   }
