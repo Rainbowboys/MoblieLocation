@@ -17,16 +17,10 @@ object StreamWordCount {
 
     val conf = new SparkConf().setAppName("StreamWordCount").setMaster("local[2]")
     val sc = new SparkContext(conf)
-
-
     val ssc = new StreamingContext(sc, Seconds(5))
-
     val ds = ssc.socketTextStream("192.168.145.147", 8888)
-
     val result = ds.flatMap(_.split(" ")).map((_, 1)).reduceByKey(_ + _)
     result.print()
-
-
     ssc.start()
     ssc.awaitTermination()
 
